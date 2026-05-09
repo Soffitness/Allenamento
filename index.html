@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Le mie Schede</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0e0e10; color: #f0f0f2; min-height: 100vh; padding-bottom: 90px; }
+
+.top-bar { position: sticky; top: 0; z-index: 100; background: #0e0e10; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 20px 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.top-bar-info h1 { font-size: 20px; font-weight: 700; }
+.top-bar-info p { font-size: 13px; color: #8a8a94; margin-top: 2px; }
+
+.edit-toggle { background: #222228; border: 1px solid rgba(255,255,255,0.14); color: #f0f0f2; padding: 8px 14px; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
+.edit-toggle.active { background: #f5a623; border-color: #f5a623; color: #0e0e10; }
+
+.nav { display: flex; gap: 6px; padding: 12px 16px; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.14); background: #18181c; color: #8a8a94; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; font-family: inherit; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.screen { padding: 0 16px 20px; }
+
+.day-header { padding: 16px 0 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.day-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+.today-badge { font-size: 10px; font-weight: 700; background: rgba(124,111,247,0.2); color: #a89ff9; border-radius: 100px; padding: 2px 8px; }
+.day-title { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.day-sub { font-size: 13px; color: #8a8a94; margin-bottom: 4px; }
+
+.edit-banner { background: rgba(245,166,35,0.12); border: 1px solid rgba(245,166,35,0.4); border-radius: 12px; padding: 10px 14px; margin: 12px 0; font-size: 12px; color: #f5a623; }
+
+.section-block { margin-top: 14px; }
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: #8a8a94; text-transform: uppercase; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.section-label-edit { flex: 1; background: transparent; border: 1px dashed rgba(255,255,255,0.2); color: #8a8a94; font-family: inherit; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; }
+.section-actions { display: flex; gap: 4px; }
+.icon-btn { background: #222228; border: 1px solid rgba(255,255,255,0.14); color: #8a8a94; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: inherit; }
+.icon-btn.danger { color: #ff5f57; }
+
+.ex-card { background: #18181c; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
+.ex-card.combo { border-left: 3px solid #f5a623; }
+.ex-card.editing { border-color: #f5a623; }
+
+.ex-header { padding: 13px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.ex-info { flex: 1; min-width: 0; }
+.ex-name { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.ex-params { font-size: 12px; color: #8a8a94; margin-top: 3px; }
+.ex-best { font-size: 13px; font-weight: 700; color: #3ecf8e; white-space: nowrap; }
+.ex-chevron { color: #8a8a94; font-size: 20px; line-height: 1; display: inline-block; }
+.ex-chevron.open { transform: rotate(180deg); }
+
+.ex-log { display: none; padding: 0 14px 14px; border-top: 1px solid rgba(255,255,255,0.08); }
+.ex-log.open { display: block; }
+
+.log-date-label { font-size: 11px; color: #8a8a94; margin: 10px 0 8px; }
+
+.input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.input-row label { font-size: 12px; color: #8a8a94; white-space: nowrap; min-width: 24px; }
+.input-row input { flex: 1; background: #222228; border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; color: #f0f0f2; font-size: 16px; padding: 10px 12px; width: 100%; -webkit-appearance: none; appearance: none; font-family: inherit; }
+.input-row input:focus { outline: none; border-color: #7c6ff7; }
+.input-row input[type=text] { text-align: left; }
+.input-row input[type=number] { text-align: center; }
+
+.save-btn { width: 100%; margin-top: 6px; padding: 12px; background: #7c6ff7; border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.save-btn:active { opacity: 0.75; }
+.save-btn.amber { background: #f5a623; color: #0e0e10; }
+.save-btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,0.14); color: #f0f0f2; }
+.save-btn.danger { background: rgba(255,95,87,0.15); color: #ff5f57; border: 1px solid rgba(255,95,87,0.3); }
+
+.combo-badge { display: inline-block; font-size: 9px; font-weight: 700; background: rgba(245,166,35,0.18); color: #f5a623; border-radius: 4px; padding: 1px 5px; margin-left: 5px; vertical-align: middle; }
+
+.history { margin-top: 14px; }
+.history-title { font-size: 10px; font-weight: 700; color: #8a8a94; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.log-entry { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; gap: 8px; }
+.log-entry:last-child { border-bottom: none; }
+.log-date { color: #8a8a94; font-size: 11px; flex-shrink: 0; }
+.log-val { flex: 1; }
+.log-val.pr { color: #3ecf8e; font-weight: 700; }
+.log-del { background: none; border: none; color: #8a8a94; font-size: 16px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+
+.add-btn { width: 100%; padding: 11px; background: transparent; border: 1px dashed rgba(255,255,255,0.2); color: #8a8a94; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; font-family: inherit; }
+.add-btn:active { background: rgba(255,255,255,0.04); }
+
+.checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: #8a8a94; }
+.checkbox-row input { width: 18px; height: 18px; accent-color: #f5a623; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-card { background: #18181c; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; }
+.stat-label { font-size: 11px; color: #8a8a94; margin-bottom: 4px; }
+.stat-val { font-size: 26px; font-weight: 700; }
+.stat-val.green { color: #3ecf8e; }
+
+.prog-card { background: #18181c; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+.prog-name { font-size: 14px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.prog-bar-bg { background: #222228; border-radius: 100px; height: 6px; overflow: hidden; margin-bottom: 8px; }
+.prog-bar-fill { height: 100%; border-radius: 100px; }
+.prog-stats { display: flex; justify-content: space-between; font-size: 12px; color: #8a8a94; flex-wrap: wrap; gap: 4px; }
+.prog-stats b { color: #f0f0f2; }
+
+.empty { text-align: center; padding: 50px 20px; color: #8a8a94; font-size: 14px; line-height: 1.6; }
+
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0e0e10; border-top: 1px solid rgba(255,255,255,0.08); display: flex; padding: 10px 0 24px; z-index: 200; }
+.bnav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: #8a8a94; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 0; font-family: inherit; }
+.bnav-btn.active { color: #7c6ff7; }
+.bnav-icon { font-size: 22px; }
+
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; }
+.modal { background: #18181c; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; }
+.modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+
+.danger-zone { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+.danger-title { font-size: 11px; color: #ff5f57; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-info">
+    <h1>Le mie Schede &#x1F4AA;</h1>
+    <p id="tlabel"></p>
+  </div>
+  <button class="edit-toggle" id="editBtn" onclick="toggleEdit()">&#9998; Modifica</button>
+</div>
+
+<div id="root"></div>
+
+<div class="bottom-nav">
+  <button class="bnav-btn active" id="b-schede" onclick="goTo('schede')">
+    <span class="bnav-icon">&#x1F4CB;</span>Schede
+  </button>
+  <button class="bnav-btn" id="b-progressi" onclick="goTo('progressi')">
+    <span class="bnav-icon">&#x1F4C8;</span>Progressi
+  </button>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+var COLORS={lun:'#7c6ff7',mar:'#3ecf8e',mer:'#f0997b',gio:'#5badeb',ven:'#f5c842'};
+var NAMES={lun:'Luned\u00ec',mar:'Marted\u00ec',mer:'Mercoled\u00ec',gio:'Gioved\u00ec',ven:'Venerd\u00ec'};
+var GIORNI=['lun','mar','mer','gio','ven'];
+
+// Default schede (used only on first load if nothing in storage)
+var SCHEDE_DEFAULT={
+  lun:{
+    title:'Glutei & Femorali',sub:'Hip thrust \u00b7 Stacco \u00b7 Bulgarian split squat',
+    sections:[
+      {label:'GLUTEI \u2014 PRINCIPALE',ex:[
+        {id:'hip_thrust_bil',name:'Hip thrust bilanciere',params:'Range \u00b7 4\u00d76-8 \u00b7 RM 8'},
+        {id:'bridge_hip',name:'Bridge hip thrust schiena a terra',params:'Combo \u00b7 4\u00d710',combo:true}
+      ]},
+      {label:'FEMORALI',ex:[
+        {id:'stacco_rum_lun',name:'Stacco rumeno manubri',params:'Combo \u00b7 4\u00d76-8',combo:true}
+      ]},
+      {label:'QUADRICIPITI & GLUTEI',ex:[
+        {id:'bulgarian',name:'Bulgarian split squat busto avanti',params:'Singolo \u00b7 3\u00d78 \u00b7 RM 10'}
+      ]},
+      {label:'ISOLAMENTO',ex:[
+        {id:'hyperext_lun',name:'Hyperextension piedi extraruotati',params:'Singolo \u00b7 4\u00d710'},
+        {id:'granchio',name:'Passo del granchio con elastico',params:'Combo \u00b7 4\u00d720',combo:true}
+      ]},
+      {label:'CORE',ex:[
+        {id:'hollow_lun',name:'Hollow position',params:'Singolo \u00b7 max'}
+      ]}
+    ]
+  },
+  mar:{
+    title:'Dorso & Spalle',sub:'Lat machine \u00b7 Rematore \u00b7 Alzate',
+    sections:[
+      {label:'DORSO \u2014 VERTICALE',ex:[
+        {id:'lat_larga',name:'Lat machine presa larga',params:'Range \u00b7 4\u00d76-8'},
+        {id:'lat_inv',name:'Lat machine presa inversa',params:'Singolo \u00b7 3\u00d78 \u00b7 RM 10'}
+      ]},
+      {label:'DORSO \u2014 ORIZZONTALE',ex:[
+        {id:'pulley',name:'Pulley con triangolo',params:'Range \u00b7 4\u00d78-10'},
+        {id:'rematore',name:'Rematore con manubrio singolo',params:'Singolo \u00b7 3\u00d712'}
+      ]},
+      {label:'SPALLE',ex:[
+        {id:'lento_av',name:'Lento avanti al multipower',params:'Range \u00b7 4\u00d76-8'},
+        {id:'alzate_lat_mar',name:'Alzate laterali al cavo basso',params:'Range \u00b7 3\u00d78-12'},
+        {id:'alzate_front',name:'Alzate frontali manubri su panca 45\u00b0',params:'Range \u00b7 3\u00d78-10'}
+      ]},
+      {label:'CORE',ex:[
+        {id:'hollow_mar',name:'Hollow position',params:'Singolo \u00b7 max'}
+      ]}
+    ]
+  },
+  mer:{
+    title:'Esterno coscia & Glutei accessori',sub:'Abductor \u00b7 Leg press \u00b7 Sumo squat',
+    sections:[
+      {label:'ESTERNO COSCIA & ABDUTTORI',ex:[
+        {id:'abductor',name:'Abductor machine',params:'Range \u00b7 3\u00d712-15'},
+        {id:'slanci',name:'Slanci posteriori al cavo basso',params:'Singolo \u00b7 3\u00d720'}
+      ]},
+      {label:'GLUTEI & QUADRICIPITI',ex:[
+        {id:'legpress',name:'Leg press 45\u00b0 piedi alti',params:'Range \u00b7 4\u00d76-8 \u00b7 RM 8'},
+        {id:'sumo',name:'Sumo squat con kettlebell',params:'Singolo \u00b7 3\u00d710 \u00b7 RM 12'},
+        {id:'affondi',name:'Affondi incrociati dietro',params:'Singolo \u00b7 3\u00d712'}
+      ]},
+      {label:'FEMORALI \u2014 ISOLAMENTO',ex:[
+        {id:'legcurl_sd',name:'Leg curl sdraiato',params:'Singolo \u00b7 2\u00d712'},
+        {id:'polpacci',name:'Polpacci alla pressa rettilinea',params:'Range \u00b7 3\u00d712-15'}
+      ]},
+      {label:'CORE',ex:[
+        {id:'plank_mer',name:'Plank frontale classico',params:'Singolo \u00b7 hold'}
+      ]}
+    ]
+  },
+  gio:{
+    title:'Petto, Braccia & Tricipiti',sub:'Panca \u00b7 French press \u00b7 Curl',
+    sections:[
+      {label:'PETTO',ex:[
+        {id:'panca',name:'Spinte panca piana manubri',params:'Singolo \u00b7 3\u00d710 \u00b7 RM 15'}
+      ]},
+      {label:'TRICIPITI',ex:[
+        {id:'french',name:'French press manubri',params:'Combo \u00b7 4\u00d78-10',combo:true},
+        {id:'pushdown',name:'Push down con corda',params:'Combo \u00b7 3-4\u00d78-12',combo:true}
+      ]},
+      {label:'BICIPITI',ex:[
+        {id:'curl_alt',name:'Curl manubri alternati in piedi',params:'Combo \u00b7 4\u00d78-10',combo:true},
+        {id:'curl_mart',name:'Curl manubri a martello in piedi',params:'Combo \u00b7 3\u00d78-10',combo:true}
+      ]},
+      {label:'CORE',ex:[
+        {id:'plank_gio',name:'Plank frontale classico',params:'Singolo \u00b7 hold'}
+      ]}
+    ]
+  },
+  ven:{
+    title:'Full body leggero & Cardio',sub:'Recupero attivo \u00b7 Isolamento \u00b7 Tapis roulant',
+    sections:[
+      {label:'ATTIVAZIONE (bassa intensit\u00e0)',ex:[
+        {id:'legext',name:'Leg extension',params:'Singolo \u00b7 1\u00d730'},
+        {id:'legcurl_sed',name:'Leg curl seduto',params:'Singolo \u00b7 1\u00d730'},
+        {id:'bridge_muro',name:'Bridge hip thrust piedi a muro',params:'Singolo \u00b7 1\u00d730'},
+        {id:'hyperext_ven',name:'Hyperextension piedi extraruotati',params:'Singolo \u00b7 1\u00d730'}
+      ]},
+      {label:'SPALLE ACCESSORIE',ex:[
+        {id:'alzate_lat_ven',name:'Alzate laterali al cavo basso',params:'Singolo \u00b7 3\u00d78 \u00b7 RM 12'}
+      ]},
+      {label:'CARDIO',ex:[
+        {id:'cardio',name:'Camminata su tapis roulant',params:'20-30 min \u00b7 inclinazione moderata'}
+      ]}
+    ]
+  }
+};
+
+function getSchede(){
+  try{
+    var s=localStorage.getItem('sch1');
+    return s?JSON.parse(s):JSON.parse(JSON.stringify(SCHEDE_DEFAULT));
+  }catch(e){return JSON.parse(JSON.stringify(SCHEDE_DEFAULT));}
+}
+function saveSchede(s){localStorage.setItem('sch1',JSON.stringify(s));}
+function getLog(){try{return JSON.parse(localStorage.getItem('gl3')||'{}');}catch(e){return {};}}
+function saveLog(l){localStorage.setItem('gl3',JSON.stringify(l));}
+
+function todayStr(){
+  var d=new Date();
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+}
+function todayDay(){
+  var map=['ven','lun','mar','mer','gio','ven','lun'];
+  return map[new Date().getDay()];
+}
+function getBest(id){
+  var e=(getLog()[id]||[]);
+  if(!e.length)return null;
+  return e.reduce(function(b,x){return(!b||x.kg>b.kg)?x:b;},null);
+}
+function genId(){return 'ex_'+Date.now()+'_'+Math.floor(Math.random()*1000);}
+function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+var page='schede';
+var day=todayDay();
+var open={};
+var editMode=false;
+var SCHEDE=getSchede();
+
+function render(){
+  document.getElementById('root').innerHTML=(page==='schede')?renderSchede():renderProgressi();
+}
+
+function toggleEdit(){
+  editMode=!editMode;
+  document.getElementById('editBtn').classList.toggle('active',editMode);
+  document.getElementById('editBtn').innerHTML=editMode?'\u2713 Fatto':'\u270E Modifica';
+  open={};
+  render();
+}
+
+function renderSchede(){
+  var nav='<div class="nav">';
+  for(var i=0;i<GIORNI.length;i++){
+    var g=GIORNI[i];
+    var isSel=(g===day);
+    var isT=(g===todayDay());
+    var st=isSel?'background:'+COLORS[g]+';border-color:'+COLORS[g]+';color:#fff':'';
+    nav+='<button class="nav-btn" style="'+st+'" onclick="setDay(\''+g+'\')"><span class="dot" style="background:'+COLORS[g]+'"></span>'+NAMES[g].slice(0,3)+(isT?'&nbsp;&#9679;':'')+' </button>';
+  }
+  nav+='</div>';
+
+  var s=SCHEDE[day];
+  var isT=(day===todayDay());
+  var col=COLORS[day];
+
+  var body='<div class="day-header"><span class="day-pill" style="background:'+col+'33;color:'+col+'">'+NAMES[day]+'</span>'+(isT?'<span class="today-badge">Oggi</span>':'')+'</div>';
+
+  if(editMode){
+    body+='<input type="text" id="day-title" value="'+escapeHtml(s.title)+'" onchange="updateDayMeta()" style="width:100%;background:#222228;border:1px solid #f5a623;border-radius:8px;color:#f0f0f2;font-size:18px;font-weight:700;padding:8px 10px;margin-bottom:6px;font-family:inherit"/>';
+    body+='<input type="text" id="day-sub" value="'+escapeHtml(s.sub)+'" onchange="updateDayMeta()" style="width:100%;background:#222228;border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:#8a8a94;font-size:13px;padding:6px 10px;margin-bottom:8px;font-family:inherit"/>';
+    body+='<div class="edit-banner">&#9998; Modalit\u00e0 modifica attiva. Tocca i campi per cambiarli, usa i pulsanti per aggiungere o eliminare.</div>';
+  }else{
+    body+='<div class="day-title">'+escapeHtml(s.title)+'</div><div class="day-sub">'+escapeHtml(s.sub)+'</div>';
+  }
+
+  for(var si=0;si<s.sections.length;si++){
+    var sec=s.sections[si];
+    body+='<div class="section-block">';
+    if(editMode){
+      body+='<div class="section-label">';
+      body+='<input type="text" class="section-label-edit" value="'+escapeHtml(sec.label)+'" onchange="updateSectionLabel('+si+',this.value)"/>';
+      body+='<div class="section-actions">';
+      body+='<button class="icon-btn danger" onclick="delSection('+si+')">&#x1F5D1;</button>';
+      body+='</div></div>';
+    }else{
+      body+='<div class="section-label">'+escapeHtml(sec.label)+'</div>';
+    }
+
+    for(var ei=0;ei<sec.ex.length;ei++){
+      var ex=sec.ex[ei];
+      var best=getBest(ex.id);
+      var bestStr=(best&&best.kg>0)?best.kg+'kg':'&mdash;';
+      var isOpen=!!open[ex.id];
+
+      if(editMode){
+        body+=renderExEdit(si,ei,ex,isOpen);
+      }else{
+        var log=getLog();
+        var entries=(log[ex.id]||[]).slice().reverse();
+        var hist='';
+        if(entries.length){
+          var maxKg=0;
+          for(var k=0;k<entries.length;k++){if(entries[k].kg>maxKg)maxKg=entries[k].kg;}
+          hist='<div class="history"><div class="history-title">Ultime sessioni</div>';
+          var limit=Math.min(8,entries.length);
+          for(var k=0;k<limit;k++){
+            var e=entries[k];
+            var isPR=(e.kg>0&&e.kg>=maxKg);
+            var realIdx=entries.length-1-k;
+            var valStr=(e.kg>0?e.kg+'kg':'&mdash;')+(e.reps>0?' &times; '+e.reps+' rep':'')+(e.note?' &middot; '+escapeHtml(e.note):'');
+            hist+='<div class="log-entry"><span class="log-date">'+e.date+'</span><span class="log-val'+(isPR?' pr':'')+'">'+valStr+'</span><button class="log-del" onclick="delE(\''+ex.id+'\','+realIdx+')">&#x2715;</button></div>';
+          }
+          hist+='</div>';
+        }
+
+        body+='<div class="ex-card'+(ex.combo?' combo':'')+'">'+
+          '<div class="ex-header" onclick="tog(\''+ex.id+'\')">'+
+            '<div class="ex-info">'+
+              '<div class="ex-name">'+escapeHtml(ex.name)+(ex.combo?'<span class="combo-badge">combo</span>':'')+'</div>'+
+              '<div class="ex-params">'+escapeHtml(ex.params)+'</div>'+
+            '</div>'+
+            '<div class="ex-best">'+bestStr+'</div>'+
+            '<div class="ex-chevron'+(isOpen?' open':'')+'">&#8964;</div>'+
+          '</div>'+
+          '<div class="ex-log'+(isOpen?' open':'')+'">'+
+            '<div class="log-date-label">Sessione &mdash; '+todayStr()+'</div>'+
+            '<div class="input-row"><label>Kg</label><input type="number" id="k-'+ex.id+'" placeholder="0" step="0.5" min="0" inputmode="decimal"></div>'+
+            '<div class="input-row"><label>Rep</label><input type="number" id="r-'+ex.id+'" placeholder="0" step="1" min="0" inputmode="numeric"></div>'+
+            '<div class="input-row"><label>Note</label><input type="text" id="n-'+ex.id+'" placeholder="fatica, forma..."></div>'+
+            '<button class="save-btn" onclick="saveE(\''+ex.id+'\')">Salva &#x2713;</button>'+
+            hist+
+          '</div>'+
+        '</div>';
+      }
+    }
+
+    if(editMode){
+      body+='<button class="add-btn" onclick="addEx('+si+')">+ Aggiungi esercizio</button>';
+    }
+    body+='</div>';
+  }
+
+  if(editMode){
+    body+='<button class="add-btn" onclick="addSection()" style="margin-top:16px">+ Aggiungi sezione</button>';
+    body+='<div class="danger-zone"><div class="danger-title">Zona pericolosa</div>';
+    body+='<button class="save-btn danger" onclick="resetDay()">Ripristina giorno predefinito</button>';
+    body+='<button class="save-btn danger" style="margin-top:8px" onclick="resetAll()">Ripristina TUTTO ai predefiniti</button>';
+    body+='</div>';
+  }
+
+  return nav+'<div class="screen">'+body+'</div>';
+}
+
+function renderExEdit(si,ei,ex,isOpen){
+  var html='<div class="ex-card editing'+(ex.combo?' combo':'')+'">';
+  html+='<div class="ex-header" onclick="tog(\''+ex.id+'\')" style="cursor:pointer">';
+  html+='<div class="ex-info">';
+  html+='<div class="ex-name">'+escapeHtml(ex.name)+(ex.combo?'<span class="combo-badge">combo</span>':'')+'</div>';
+  html+='<div class="ex-params">'+escapeHtml(ex.params)+'</div>';
+  html+='</div>';
+  html+='<div class="ex-chevron'+(isOpen?' open':'')+'">&#8964;</div>';
+  html+='</div>';
+
+  html+='<div class="ex-log'+(isOpen?' open':'')+'">';
+  html+='<div class="input-row"><label>Nome</label><input type="text" value="'+escapeHtml(ex.name)+'" onchange="updateEx('+si+','+ei+',\'name\',this.value)"></div>';
+  html+='<div class="input-row"><label>Param.</label><input type="text" value="'+escapeHtml(ex.params)+'" onchange="updateEx('+si+','+ei+',\'params\',this.value)" placeholder="es. 4\u00d76-8 \u00b7 RM 8"></div>';
+  html+='<label class="checkbox-row"><input type="checkbox" '+(ex.combo?'checked':'')+' onchange="updateEx('+si+','+ei+',\'combo\',this.checked)"> &Egrave; un esercizio combo / superset</label>';
+  html+='<button class="save-btn ghost" onclick="moveEx('+si+','+ei+',-1)">&uarr; Sposta su</button>';
+  html+='<button class="save-btn ghost" style="margin-top:6px" onclick="moveEx('+si+','+ei+',1)">&darr; Sposta gi\u00f9</button>';
+  html+='<button class="save-btn danger" style="margin-top:6px" onclick="delEx('+si+','+ei+')">&#x1F5D1; Elimina esercizio</button>';
+  html+='</div>';
+  html+='</div>';
+  return html;
+}
+
+function renderProgressi(){
+  var log=getLog();
+  var allEx=[];
+  for(var gi=0;gi<GIORNI.length;gi++){
+    var g=GIORNI[gi];
+    var scs=SCHEDE[g].sections;
+    for(var si=0;si<scs.length;si++){
+      var exs=scs[si].ex;
+      for(var ei=0;ei<exs.length;ei++){
+        var ex=exs[ei];
+        var entries=log[ex.id]||[];
+        if(entries.length){
+          var maxKg=0;
+          for(var k=0;k<entries.length;k++){if(entries[k].kg>maxKg)maxKg=entries[k].kg;}
+          allEx.push({id:ex.id,name:ex.name,entries:entries,maxKg:maxKg,firstKg:entries[0].kg,day:g});
+        }
+      }
+    }
+  }
+
+  var totSess=0;
+  var keys=Object.keys(log);
+  for(var i=0;i<keys.length;i++)totSess+=log[keys[i]].length;
+  var totEx=keys.filter(function(k){return log[k].length>0;}).length;
+  var totPR=0;
+  for(var i=0;i<allEx.length;i++){if(allEx[i].maxKg>allEx[i].firstKg)totPR++;}
+
+  var html='<div class="screen">';
+  html+='<div style="font-size:18px;font-weight:700;padding:16px 0 12px">I tuoi progressi</div>';
+  html+='<div class="stat-grid">'+
+    '<div class="stat-card"><div class="stat-label">Sessioni totali</div><div class="stat-val">'+totSess+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Esercizi tracciati</div><div class="stat-val">'+totEx+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Personal record &#x1F3C6;</div><div class="stat-val green">'+totPR+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Settimane</div><div class="stat-val">'+Math.max(1,Math.ceil(totSess/5))+'</div></div>'+
+  '</div>';
+
+  if(!allEx.length){
+    html+='<div class="empty">Nessun dato ancora.<br>Registra la prima sessione e torna qui!</div>';
+  }else{
+    allEx.sort(function(a,b){return b.entries.length-a.entries.length;});
+    for(var i=0;i<allEx.length;i++){
+      var ex=allEx[i];
+      var pct=ex.firstKg>0?Math.min(100,Math.round(((ex.maxKg-ex.firstKg)/ex.firstKg)*100)):0;
+      var col=COLORS[ex.day];
+      html+='<div class="prog-card">'+
+        '<div class="prog-name"><span style="width:8px;height:8px;border-radius:50%;background:'+col+';display:inline-block;flex-shrink:0"></span>'+escapeHtml(ex.name)+'</div>'+
+        '<div class="prog-bar-bg"><div class="prog-bar-fill" style="width:'+Math.max(4,pct)+'%;background:'+col+'"></div></div>'+
+        '<div class="prog-stats">'+
+          '<span>Inizio: <b>'+ex.firstKg+'kg</b></span>'+
+          '<span>Best: <b>'+ex.maxKg+'kg</b></span>'+
+          '<span>'+ex.entries.length+' sessioni</span>'+
+          (pct>0?'<span style="color:'+col+';font-weight:700">+'+pct+'%</span>':'')+
+        '</div>'+
+      '</div>';
+    }
+  }
+  html+='</div>';
+  return html;
+}
+
+// EDIT actions
+function updateDayMeta(){
+  SCHEDE[day].title=document.getElementById('day-title').value;
+  SCHEDE[day].sub=document.getElementById('day-sub').value;
+  saveSchede(SCHEDE);
+}
+function updateSectionLabel(si,val){
+  SCHEDE[day].sections[si].label=val;
+  saveSchede(SCHEDE);
+}
+function delSection(si){
+  if(!confirm('Eliminare la sezione "'+SCHEDE[day].sections[si].label+'" e tutti i suoi esercizi?'))return;
+  SCHEDE[day].sections.splice(si,1);
+  saveSchede(SCHEDE);
+  render();
+}
+function addSection(){
+  var name=prompt('Nome della nuova sezione:','NUOVA SEZIONE');
+  if(!name)return;
+  SCHEDE[day].sections.push({label:name.toUpperCase(),ex:[]});
+  saveSchede(SCHEDE);
+  render();
+}
+function addEx(si){
+  var newEx={id:genId(),name:'Nuovo esercizio',params:'3\u00d710',combo:false};
+  SCHEDE[day].sections[si].ex.push(newEx);
+  saveSchede(SCHEDE);
+  open[newEx.id]=true;
+  render();
+}
+function updateEx(si,ei,field,val){
+  SCHEDE[day].sections[si].ex[ei][field]=val;
+  saveSchede(SCHEDE);
+  if(field==='combo')render();
+}
+function delEx(si,ei){
+  var ex=SCHEDE[day].sections[si].ex[ei];
+  if(!confirm('Eliminare "'+ex.name+'"?\n(Lo storico dei kg viene mantenuto)'))return;
+  SCHEDE[day].sections[si].ex.splice(ei,1);
+  saveSchede(SCHEDE);
+  render();
+}
+function moveEx(si,ei,dir){
+  var arr=SCHEDE[day].sections[si].ex;
+  var newIdx=ei+dir;
+  if(newIdx<0||newIdx>=arr.length)return;
+  var tmp=arr[ei];
+  arr[ei]=arr[newIdx];
+  arr[newIdx]=tmp;
+  saveSchede(SCHEDE);
+  render();
+}
+function resetDay(){
+  if(!confirm('Ripristinare il giorno "'+NAMES[day]+'" alla scheda predefinita?\nLo storico dei kg viene mantenuto.'))return;
+  SCHEDE[day]=JSON.parse(JSON.stringify(SCHEDE_DEFAULT[day]));
+  saveSchede(SCHEDE);
+  render();
+}
+function resetAll(){
+  if(!confirm('ATTENZIONE: ripristinare TUTTE le schede ai valori predefiniti?\nLo storico dei kg viene mantenuto.'))return;
+  if(!confirm('Sei sicura? Questa azione non si pu\u00f2 annullare.'))return;
+  SCHEDE=JSON.parse(JSON.stringify(SCHEDE_DEFAULT));
+  saveSchede(SCHEDE);
+  render();
+}
+
+// LOG actions
+function tog(id){
+  open[id]=!open[id];
+  render();
+  if(open[id]&&!editMode){
+    setTimeout(function(){
+      var el=document.getElementById('k-'+id);
+      if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+    },80);
+  }
+}
+function setDay(g){day=g;open={};render();window.scrollTo(0,0);}
+function saveE(id){
+  var kg=parseFloat((document.getElementById('k-'+id)||{}).value)||0;
+  var reps=parseInt((document.getElementById('r-'+id)||{}).value)||0;
+  var note=((document.getElementById('n-'+id)||{}).value)||'';
+  if(!kg&&!reps&&!note){alert('Inserisci almeno i kg o le ripetizioni!');return;}
+  var log=getLog();
+  if(!log[id])log[id]=[];
+  log[id].push({date:todayStr(),kg:kg,reps:reps,note:note});
+  saveLog(log);
+  open[id]=true;
+  render();
+}
+function delE(id,idx){
+  if(!confirm('Eliminare questa voce?'))return;
+  var log=getLog();
+  if(log[id])log[id].splice(idx,1);
+  saveLog(log);
+  open[id]=true;
+  render();
+}
+function goTo(p){
+  page=p;open={};
+  if(editMode)toggleEdit();
+  var bs=document.querySelectorAll('.bnav-btn');
+  for(var i=0;i<bs.length;i++)bs[i].classList.remove('active');
+  document.getElementById('b-'+p).classList.add('active');
+  render();window.scrollTo(0,0);
+}
+
+(function(){
+  var days=['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
+  var d=new Date();
+  document.getElementById('tlabel').textContent=days[d.getDay()]+' '+todayStr();
+  render();
+})();
+</script>
+</body>
+</html>
