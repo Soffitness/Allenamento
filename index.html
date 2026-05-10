@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Le mie Schede</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0e0e10; color: #f0f0f2; min-height: 100vh; padding-bottom: 90px; }
+
+.top-bar { position: sticky; top: 0; z-index: 100; background: #0e0e10; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 20px 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.top-bar-info h1 { font-size: 20px; font-weight: 700; }
+.top-bar-info p { font-size: 13px; color: #8a8a94; margin-top: 2px; }
+
+.edit-toggle { background: #222228; border: 1px solid rgba(255,255,255,0.14); color: #f0f0f2; padding: 8px 14px; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
+.edit-toggle.active { background: #f5a623; border-color: #f5a623; color: #0e0e10; }
+
+.nav { display: flex; gap: 6px; padding: 12px 16px; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.14); background: #18181c; color: #8a8a94; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; font-family: inherit; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.screen { padding: 0 16px 20px; }
+
+.day-header { padding: 16px 0 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.day-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+.today-badge { font-size: 10px; font-weight: 700; background: rgba(124,111,247,0.2); color: #a89ff9; border-radius: 100px; padding: 2px 8px; }
+.day-title { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.day-sub { font-size: 13px; color: #8a8a94; margin-bottom: 4px; }
+
+.edit-banner { background: rgba(245,166,35,0.12); border: 1px solid rgba(245,166,35,0.4); border-radius: 12px; padding: 10px 14px; margin: 12px 0; font-size: 12px; color: #f5a623; }
+
+.section-block { margin-top: 14px; }
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: #8a8a94; text-transform: uppercase; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.section-label.mobility { color: #5badeb; }
+.section-label-edit { flex: 1; background: transparent; border: 1px dashed rgba(255,255,255,0.2); color: #8a8a94; font-family: inherit; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; }
+.section-actions { display: flex; gap: 4px; }
+.icon-btn { background: #222228; border: 1px solid rgba(255,255,255,0.14); color: #8a8a94; padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: inherit; }
+.icon-btn.danger { color: #ff5f57; }
+
+.ex-card { background: #18181c; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
+.ex-card.combo { border-left: 3px solid #f5a623; }
+.ex-card.mobility { border-left: 3px solid #5badeb; background: #16191e; }
+.ex-card.editing { border-color: #f5a623; }
+
+.ex-header { padding: 10px 12px 10px 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+
+.muscle-icon { width: 46px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
+.muscle-icon svg { width: 32px; height: 32px; }
+.muscle-tag { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 4px; white-space: nowrap; }
+
+.ex-info { flex: 1; min-width: 0; }
+.ex-name { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.ex-params { font-size: 12px; color: #8a8a94; margin-top: 3px; }
+
+.ex-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.ex-best { font-size: 13px; font-weight: 700; color: #3ecf8e; white-space: nowrap; }
+
+.video-btn { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,0,0,0.12); border: 1px solid rgba(255,0,0,0.25); color: #ff5f57; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; text-decoration: none; font-family: inherit; cursor: pointer; }
+.video-btn:active { opacity: 0.7; }
+.video-btn svg { width: 12px; height: 12px; fill: currentColor; }
+
+.ex-chevron { color: #8a8a94; font-size: 20px; line-height: 1; display: inline-block; }
+.ex-chevron.open { transform: rotate(180deg); }
+
+.ex-log { display: none; padding: 0 14px 14px; border-top: 1px solid rgba(255,255,255,0.08); }
+.ex-log.open { display: block; }
+
+.mobility-desc { font-size: 13px; color: #c0c0c8; line-height: 1.5; padding: 10px 0 0; }
+
+.muscle-info { padding: 10px 0 6px; font-size: 11px; color: #8a8a94; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.muscle-info b { color: #c0c0c8; }
+
+.video-link-big { display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255,0,0,0.12); border: 1px solid rgba(255,0,0,0.3); color: #ff5f57; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; margin: 8px 0; font-family: inherit; }
+.video-link-big:active { opacity: 0.7; }
+
+.log-date-label { font-size: 11px; color: #8a8a94; margin: 10px 0 8px; }
+
+.input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.input-row label { font-size: 12px; color: #8a8a94; white-space: nowrap; min-width: 24px; }
+.input-row input { flex: 1; background: #222228; border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; color: #f0f0f2; font-size: 16px; padding: 10px 12px; width: 100%; -webkit-appearance: none; appearance: none; font-family: inherit; }
+.input-row input:focus { outline: none; border-color: #7c6ff7; }
+.input-row input[type=text] { text-align: left; }
+.input-row input[type=number] { text-align: center; }
+
+.save-btn { width: 100%; margin-top: 6px; padding: 12px; background: #7c6ff7; border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.save-btn:active { opacity: 0.75; }
+.save-btn.amber { background: #f5a623; color: #0e0e10; }
+.save-btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,0.14); color: #f0f0f2; }
+.save-btn.danger { background: rgba(255,95,87,0.15); color: #ff5f57; border: 1px solid rgba(255,95,87,0.3); }
+
+.combo-badge { display: inline-block; font-size: 9px; font-weight: 700; background: rgba(245,166,35,0.18); color: #f5a623; border-radius: 4px; padding: 1px 5px; margin-left: 5px; vertical-align: middle; }
+.mobility-badge { display: inline-block; font-size: 9px; font-weight: 700; background: rgba(91,173,235,0.18); color: #5badeb; border-radius: 4px; padding: 1px 5px; margin-left: 5px; vertical-align: middle; }
+
+.history { margin-top: 14px; }
+.history-title { font-size: 10px; font-weight: 700; color: #8a8a94; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.log-entry { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; gap: 8px; }
+.log-entry:last-child { border-bottom: none; }
+.log-date { color: #8a8a94; font-size: 11px; flex-shrink: 0; }
+.log-val { flex: 1; }
+.log-val.pr { color: #3ecf8e; font-weight: 700; }
+.log-del { background: none; border: none; color: #8a8a94; font-size: 16px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+
+.add-btn { width: 100%; padding: 11px; background: transparent; border: 1px dashed rgba(255,255,255,0.2); color: #8a8a94; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; font-family: inherit; }
+.add-btn:active { background: rgba(255,255,255,0.04); }
+
+.checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: #8a8a94; }
+.checkbox-row input { width: 18px; height: 18px; accent-color: #f5a623; }
+
+.muscle-select { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+.muscle-opt { background: #222228; border: 1px solid rgba(255,255,255,0.14); color: #8a8a94; padding: 8px 4px; border-radius: 8px; font-size: 11px; cursor: pointer; font-family: inherit; text-align: center; }
+.muscle-opt.sel { background: #7c6ff7; border-color: #7c6ff7; color: #fff; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-card { background: #18181c; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; }
+.stat-label { font-size: 11px; color: #8a8a94; margin-bottom: 4px; }
+.stat-val { font-size: 26px; font-weight: 700; }
+.stat-val.green { color: #3ecf8e; }
+
+.prog-card { background: #18181c; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+.prog-name { font-size: 14px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.prog-bar-bg { background: #222228; border-radius: 100px; height: 6px; overflow: hidden; margin-bottom: 8px; }
+.prog-bar-fill { height: 100%; border-radius: 100px; }
+.prog-stats { display: flex; justify-content: space-between; font-size: 12px; color: #8a8a94; flex-wrap: wrap; gap: 4px; }
+.prog-stats b { color: #f0f0f2; }
+
+.empty { text-align: center; padding: 50px 20px; color: #8a8a94; font-size: 14px; line-height: 1.6; }
+
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0e0e10; border-top: 1px solid rgba(255,255,255,0.08); display: flex; padding: 10px 0 24px; z-index: 200; }
+.bnav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: #8a8a94; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 0; font-family: inherit; }
+.bnav-btn.active { color: #7c6ff7; }
+.bnav-icon { font-size: 22px; }
+
+.danger-zone { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+.danger-title { font-size: 11px; color: #ff5f57; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-info">
+    <h1>Le mie Schede &#x1F4AA;</h1>
+    <p id="tlabel"></p>
+  </div>
+  <button class="edit-toggle" id="editBtn" onclick="toggleEdit()">&#9998; Modifica</button>
+</div>
+
+<div id="root"></div>
+
+<div class="bottom-nav">
+  <button class="bnav-btn active" id="b-schede" onclick="goTo('schede')">
+    <span class="bnav-icon">&#x1F4CB;</span>Schede
+  </button>
+  <button class="bnav-btn" id="b-progressi" onclick="goTo('progressi')">
+    <span class="bnav-icon">&#x1F4C8;</span>Progressi
+  </button>
+</div>
+
+<script>
+var COLORS={lun:'#7c6ff7',mar:'#3ecf8e',mer:'#f0997b',gio:'#5badeb',ven:'#f5c842'};
+var NAMES={lun:'Luned\u00ec',mar:'Marted\u00ec',mer:'Mercoled\u00ec',gio:'Gioved\u00ec',ven:'Venerd\u00ec'};
+var GIORNI=['lun','mar','mer','gio','ven'];
+
+var MUSCLES = {
+  glutei:    { label:'Glutei',     color:'#e74c8c', short:'GLU' },
+  femorali:  { label:'Femorali',   color:'#9b59b6', short:'FEM' },
+  quadricipiti:{ label:'Quadricipiti', color:'#e67e22', short:'QUA' },
+  polpacci:  { label:'Polpacci',   color:'#16a085', short:'POL' },
+  abduttori: { label:'Abduttori',  color:'#f39c12', short:'ABD' },
+  adduttori: { label:'Adduttori',  color:'#d35400', short:'ADD' },
+  dorso:     { label:'Dorso',      color:'#3498db', short:'DOR' },
+  spalle:    { label:'Spalle',     color:'#1abc9c', short:'SPA' },
+  petto:     { label:'Petto',      color:'#e74c3c', short:'PET' },
+  bicipiti:  { label:'Bicipiti',   color:'#f1c40f', short:'BIC' },
+  tricipiti: { label:'Tricipiti',  color:'#e84393', short:'TRI' },
+  core:      { label:'Core',       color:'#fdcb6e', short:'COR' },
+  lombari:   { label:'Lombari',    color:'#6c5ce7', short:'LOM' },
+  cardio:    { label:'Cardio',     color:'#ff7675', short:'CDO' },
+  fullbody:  { label:'Full body',  color:'#74b9ff', short:'F.B.' },
+  mobility:  { label:'Mobilit\u00e0', color:'#5badeb', short:'MOB' }
+};
+
+function muscleIcon(muscle){
+  if(!muscle||!MUSCLES[muscle])muscle='fullbody';
+  var col=MUSCLES[muscle].color;
+  var hl = {
+    head:'#5a5a64', torso:'#5a5a64', arm:'#5a5a64', leg:'#5a5a64',
+    glutei:'#5a5a64', femorali:'#5a5a64', quad:'#5a5a64', polpacci:'#5a5a64',
+    petto:'#5a5a64', dorso:'#5a5a64', spalle:'#5a5a64', bicipiti:'#5a5a64',
+    tricipiti:'#5a5a64', core:'#5a5a64', abd:'#5a5a64'
+  };
+  var back = (muscle==='glutei'||muscle==='femorali'||muscle==='dorso'||muscle==='tricipiti'||muscle==='lombari'||muscle==='polpacci');
+
+  if(muscle==='glutei') hl.glutei=col;
+  else if(muscle==='femorali') hl.femorali=col;
+  else if(muscle==='quadricipiti') hl.quad=col;
+  else if(muscle==='polpacci') hl.polpacci=col;
+  else if(muscle==='petto') hl.petto=col;
+  else if(muscle==='dorso') hl.dorso=col;
+  else if(muscle==='spalle') hl.spalle=col;
+  else if(muscle==='bicipiti') hl.bicipiti=col;
+  else if(muscle==='tricipiti') hl.tricipiti=col;
+  else if(muscle==='core') hl.core=col;
+  else if(muscle==='lombari') hl.dorso=col;
+  else if(muscle==='abduttori') hl.glutei=col;
+  else if(muscle==='adduttori') hl.quad=col;
+  else if(muscle==='cardio') { hl.torso=col; hl.leg=col; }
+  else if(muscle==='fullbody') { hl.torso=col; hl.leg=col; hl.arm=col; }
+  else if(muscle==='mobility') { hl.torso='#5badeb'; hl.arm='#5badeb'; hl.leg='#5badeb'; }
+
+  if(back){
+    return '<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">'+
+      '<circle cx="30" cy="9" r="6" fill="'+hl.head+'"/>'+
+      '<rect x="6" y="18" width="9" height="22" rx="4" fill="'+hl.arm+'"/>'+
+      '<rect x="45" y="18" width="9" height="22" rx="4" fill="'+hl.arm+'"/>'+
+      '<path d="M16 18 Q30 14 44 18 L42 38 L18 38 Z" fill="'+hl.dorso+'"/>'+
+      '<path d="M18 38 L42 38 L40 48 L20 48 Z" fill="'+(muscle==='lombari'?col:'#4a4a54')+'"/>'+
+      '<path d="M18 48 Q22 56 30 56 Q38 56 42 48 L43 56 Q30 64 17 56 Z" fill="'+hl.glutei+'"/>'+
+      '<rect x="18" y="56" width="10" height="14" rx="3" fill="'+hl.femorali+'"/>'+
+      '<rect x="32" y="56" width="10" height="14" rx="3" fill="'+hl.femorali+'"/>'+
+      '<rect x="19" y="70" width="8" height="8" rx="2" fill="'+hl.polpacci+'"/>'+
+      '<rect x="33" y="70" width="8" height="8" rx="2" fill="'+hl.polpacci+'"/>'+
+      (muscle==='tricipiti'?'<rect x="6" y="22" width="9" height="14" rx="3" fill="'+col+'"/><rect x="45" y="22" width="9" height="14" rx="3" fill="'+col+'"/>':'')+
+      (muscle==='spalle'?'<circle cx="11" cy="20" r="5" fill="'+col+'"/><circle cx="49" cy="20" r="5" fill="'+col+'"/>':'')+
+      '</svg>';
+  } else {
+    return '<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">'+
+      '<circle cx="30" cy="9" r="6" fill="'+hl.head+'"/>'+
+      '<circle cx="11" cy="20" r="5" fill="'+hl.spalle+'"/>'+
+      '<circle cx="49" cy="20" r="5" fill="'+hl.spalle+'"/>'+
+      '<rect x="6" y="22" width="9" height="14" rx="3" fill="'+hl.bicipiti+'"/>'+
+      '<rect x="45" y="22" width="9" height="14" rx="3" fill="'+hl.bicipiti+'"/>'+
+      '<rect x="6" y="36" width="8" height="10" rx="2" fill="'+hl.arm+'"/>'+
+      '<rect x="46" y="36" width="8" height="10" rx="2" fill="'+hl.arm+'"/>'+
+      '<path d="M16 19 Q30 16 44 19 L42 32 L18 32 Z" fill="'+hl.petto+'"/>'+
+      '<rect x="20" y="32" width="20" height="14" rx="2" fill="'+hl.core+'"/>'+
+      '<path d="M18 46 L42 46 L40 52 L20 52 Z" fill="'+hl.torso+'"/>'+
+      '<rect x="18" y="52" width="10" height="16" rx="3" fill="'+hl.quad+'"/>'+
+      '<rect x="32" y="52" width="10" height="16" rx="3" fill="'+hl.quad+'"/>'+
+      '<rect x="19" y="68" width="8" height="10" rx="2" fill="'+hl.leg+'"/>'+
+      '<rect x="33" y="68" width="8" height="10" rx="2" fill="'+hl.leg+'"/>'+
+      '</svg>';
+  }
+}
+
+function muscleBg(m){
+  if(!m||!MUSCLES[m])return 'rgba(255,255,255,0.04)';
+  return MUSCLES[m].color+'22';
+}
+
+function youtubeUrl(name){
+  var q=encodeURIComponent(name+' tutorial italiano');
+  return 'https://www.youtube.com/results?search_query='+q;
+}
+
+var SCHEDE_DEFAULT={
+  lun:{
+    title:'Glutei & Femorali',sub:'Hip thrust \u00b7 Stacco \u00b7 Bulgarian split squat',
+    sections:[
+      {label:'MOBILIT\u00c0 INIZIALE \u00b7 ~8 min',mobility:true,ex:[
+        {id:'mob_lun_1',name:'Cat-Camel (Gatto-Cammello)',params:'2\u00d710 lente',mobility:true,muscle:'mobility',desc:'A quattro zampe, alterna inarcamento (sguardo in alto) e curvatura della schiena (sguardo all\'ombelico). Mobilizza la colonna prima dello stacco e dell\'hip thrust.'},
+        {id:'mob_lun_2',name:'Glute Bridge a corpo libero',params:'2\u00d715',mobility:true,muscle:'glutei',desc:'Sdraiata supina, ginocchia piegate, solleva il bacino spingendo dai talloni. Attiva i glutei e li \"sveglia\" prima del lavoro pesante.'},
+        {id:'mob_lun_3',name:'World\'s Greatest Stretch',params:'2\u00d75 per lato',mobility:true,muscle:'mobility',desc:'Affondo, mano a terra dentro al piede avanti, ruota il busto aprendo il braccio verso il cielo. Apre flessori dell\'anca, adduttori e zona toracica.'},
+        {id:'mob_lun_4',name:'90/90 Hip Switch',params:'2\u00d710 per lato',mobility:true,muscle:'glutei',desc:'Seduta a terra, una gamba davanti a 90\u00b0 e una dietro a 90\u00b0, alterna i lati ruotando le anche. Cruciale per Bulgarian split squat e hip thrust.'},
+        {id:'mob_lun_5',name:'Banded Clamshell',params:'2\u00d712 per lato',mobility:true,muscle:'glutei',desc:'Sdraiata sul fianco, ginocchia piegate con elastico sopra le ginocchia, apri la gamba superiore. Pre-attivazione dei glutei medi.'}
+      ]},
+      {label:'GLUTEI \u2014 PRINCIPALE',ex:[
+        {id:'hip_thrust_bil',name:'Hip thrust bilanciere',params:'Range \u00b7 4\u00d76-8 \u00b7 RM 8',muscle:'glutei'},
+        {id:'bridge_hip',name:'Bridge hip thrust schiena a terra',params:'Combo \u00b7 4\u00d710',combo:true,muscle:'glutei'}
+      ]},
+      {label:'FEMORALI',ex:[
+        {id:'stacco_rum_lun',name:'Stacco rumeno manubri',params:'Combo \u00b7 4\u00d76-8',combo:true,muscle:'femorali'}
+      ]},
+      {label:'QUADRICIPITI & GLUTEI',ex:[
+        {id:'bulgarian',name:'Bulgarian split squat busto avanti',params:'Singolo \u00b7 3\u00d78 \u00b7 RM 10',muscle:'quadricipiti'}
+      ]},
+      {label:'ISOLAMENTO',ex:[
+        {id:'hyperext_lun',name:'Hyperextension piedi extraruotati',params:'Singolo \u00b7 4\u00d710',muscle:'glutei'},
+        {id:'granchio',name:'Passo del granchio con elastico',params:'Combo \u00b7 4\u00d720',combo:true,muscle:'abduttori'}
+      ]},
+      {label:'CORE',ex:[
+        {id:'hollow_lun',name:'Hollow position',params:'Singolo \u00b7 max',muscle:'core'}
+      ]}
+    ]
+  },
+  mar:{
+    title:'Dorso & Spalle',sub:'Lat machine \u00b7 Rematore \u00b7 Alzate',
+    sections:[
+      {label:'MOBILIT\u00c0 INIZIALE \u00b7 ~8 min',mobility:true,ex:[
+        {id:'mob_mar_1',name:'Scapular Wall Slides',params:'2\u00d710',mobility:true,muscle:'spalle',desc:'In piedi contro un muro, braccia a 90\u00b0 contro il muro, scivola verso l\'alto e gi\u00f9 mantenendo gomiti e polsi a contatto. Attiva i muscoli scapolari e prepara le spalle.'},
+        {id:'mob_mar_2',name:'Thread the Needle',params:'2\u00d78 per lato',mobility:true,muscle:'dorso',desc:'A quattro zampe, fai passare un braccio sotto l\'altro ruotando il busto. Mobilizza la zona toracica, fondamentale per pulley e rematore.'},
+        {id:'mob_mar_3',name:'Banded Pull-Apart',params:'2\u00d715',mobility:true,muscle:'dorso',desc:'Elastico tenuto davanti con braccia tese, apri tirando l\'elastico ai lati. Pre-attiva romboidi e trapezio medio per la lat machine.'},
+        {id:'mob_mar_4',name:'Arm Circles',params:'2\u00d710 avanti + 10 indietro',mobility:true,muscle:'spalle',desc:'Cerchi con le braccia, prima piccoli poi sempre pi\u00f9 ampi. Riscalda spalle e cuffia dei rotatori prima di lento avanti e alzate.'},
+        {id:'mob_mar_5',name:'Cat-Camel',params:'2\u00d710',mobility:true,muscle:'mobility',desc:'A quattro zampe, alterna inarcamento e curvatura. Mobilizza tutta la colonna toracica.'},
+        {id:'mob_mar_6',name:'Dead Hang',params:'2\u00d720 sec',mobility:true,muscle:'dorso',desc:'Appesa alla sbarra a braccia tese (anche con assistenza). Decomprime la colonna e allunga il dorso prima della lat machine.'}
+      ]},
+      {label:'DORSO \u2014 VERTICALE',ex:[
+        {id:'lat_larga',name:'Lat machine presa larga',params:'Range \u00b7 4\u00d76-8',muscle:'dorso'},
+        {id:'lat_inv',name:'Lat machine presa inversa',params:'Singolo \u00b7 3\u00d78 \u00b7 RM 10',muscle:'dorso'}
+      ]},
+      {label:'DORSO \u2014 ORIZZONTALE',ex:[
+        {id:'pulley',name:'Pulley con triangolo',params:'Range \u00b7 4\u00d78-10',muscle:'dorso'},
+        {id:'rematore',name:'Rematore con manubrio singolo',params:'Singolo \u00b7 3\u00d712',muscle:'dorso'}
+      ]},
+      {label:'SPALLE',ex:[
+        {id:'lento_av',name:'Lento avanti al multipower',params:'Range \u00b7 4\u00d76-8',muscle:'spalle'},
+        {id:'alzate_lat_mar',name:'Alzate laterali al cavo basso',params:'Range \u00b7 3\u00d78-12',muscle:'spalle'},
+        {id:'alzate_front',name:'Alzate frontali manubri su panca 45\u00b0',params:'Range \u00b7 3\u00d78-10',muscle:'spalle'}
+      ]},
+      {label:'CORE',ex:[
+        {id:'hollow_mar',name:'Hollow position',params:'Singolo \u00b7 max',muscle:'core'}
+      ]}
+    ]
+  },
+  mer:{
+    title:'Esterno coscia & Glutei accessori',sub:'Abductor \u00b7 Leg press \u00b7 Sumo squat',
+    sections:[
+      {label:'MOBILIT\u00c0 INIZIALE \u00b7 ~8 min',mobility:true,ex:[
+        {id:'mob_mer_1',name:'Frog Stretch',params:'2\u00d730 sec',mobility:true,muscle:'adduttori',desc:'A quattro zampe, ginocchia larghe e piedi a martello, spingi indietro il bacino. Apre l\'interno coscia ed \u00e8 essenziale per il sumo squat.'},
+        {id:'mob_mer_2',name:'Cossack Squat (lento)',params:'2\u00d76 per lato',mobility:true,muscle:'adduttori',desc:'In piedi, gambe larghe, scendi su un lato piegando un ginocchio mentre l\'altra gamba resta tesa. Mobilita anche, adduttori e caviglie.'},
+        {id:'mob_mer_3',name:'Banded Lateral Walk',params:'2\u00d710 per lato',mobility:true,muscle:'abduttori',desc:'Elastico sopra le ginocchia, in mezzo squat, fai 10 passi laterali. Pre-attiva l\'esterno coscia e i glutei medi.'},
+        {id:'mob_mer_4',name:'Fire Hydrant',params:'2\u00d712 per lato',mobility:true,muscle:'abduttori',desc:'A quattro zampe, alza una gamba lateralmente con ginocchio piegato. Attiva direttamente i glutei medi.'},
+        {id:'mob_mer_5',name:'Ankle Mobility (parete)',params:'2\u00d710 per lato',mobility:true,muscle:'polpacci',desc:'In piedi davanti al muro, ginocchio in avanti cercando di toccarlo senza staccare il tallone. Migliora la profondit\u00e0 di leg press e sumo squat.'},
+        {id:'mob_mer_6',name:'90/90 Hip Switch',params:'2\u00d78 per lato',mobility:true,muscle:'glutei',desc:'Seduta a terra, alterna le anche da 90/90 di un lato all\'altro. Mobilita rotazione interna ed esterna delle anche.'}
+      ]},
+      {label:'ESTERNO COSCIA & ABDUTTORI',ex:[
+        {id:'abductor',name:'Abductor machine',params:'Range \u00b7 3\u00d712-15',muscle:'abduttori'},
+        {id:'slanci',name:'Slanci posteriori al cavo basso',params:'Singolo \u00b7 3\u00d720',muscle:'glutei'}
+      ]},
+      {label:'GLUTEI & QUADRICIPITI',ex:[
+        {id:'legpress',name:'Leg press 45\u00b0 piedi alti',params:'Range \u00b7 4\u00d76-8 \u00b7 RM 8',muscle:'glutei'},
+        {id:'sumo',name:'Sumo squat con kettlebell',params:'Singolo \u00b7 3\u00d710 \u00b7 RM 12',muscle:'adduttori'},
+        {id:'affondi',name:'Affondi incrociati dietro',params:'Singolo \u00b7 3\u00d712',muscle:'glutei'}
+      ]},
+      {label:'FEMORALI \u2014 ISOLAMENTO',ex:[
+        {id:'legcurl_sd',name:'Leg curl sdraiato',params:'Singolo \u00b7 2\u00d712',muscle:'femorali'},
+        {id:'polpacci',name:'Polpacci alla pressa rettilinea',params:'Range \u00b7 3\u00d712-15',muscle:'polpacci'}
+      ]},
+      {label:'CORE',ex:[
+        {id:'plank_mer',name:'Plank frontale classico',params:'Singolo \u00b7 hold',muscle:'core'}
+      ]}
+    ]
+  },
+  gio:{
+    title:'Petto, Braccia & Tricipiti',sub:'Panca \u00b7 French press \u00b7 Curl',
+    sections:[
+      {label:'MOBILIT\u00c0 INIZIALE \u00b7 ~7 min',mobility:true,ex:[
+        {id:'mob_gio_1',name:'Doorway Chest Stretch',params:'2\u00d730 sec',mobility:true,muscle:'petto',desc:'Braccio piegato a 90\u00b0 contro lo stipite di una porta, ruota il busto allontanandoti. Apre il petto prima delle spinte panca.'},
+        {id:'mob_gio_2',name:'Scapular Push-Up',params:'2\u00d710',mobility:true,muscle:'spalle',desc:'In posizione di plank, abbassa il petto solo facendo lavorare le scapole (avvicinandole), poi spingi via. Stabilizza le spalle per la panca.'},
+        {id:'mob_gio_3',name:'Wrist Circles',params:'2\u00d710 per direzione',mobility:true,muscle:'mobility',desc:'Cerchi con i polsi in entrambe le direzioni. Fondamentale prima di curl, panca e french press.'},
+        {id:'mob_gio_4',name:'Triceps Stretch (sopra la testa)',params:'2\u00d720 sec per lato',mobility:true,muscle:'tricipiti',desc:'Braccio sopra la testa, gomito piegato, mano dietro la schiena, l\'altra mano spinge il gomito. Allunga i tricipiti prima del french press.'},
+        {id:'mob_gio_5',name:'Banded Pull-Apart',params:'2\u00d712',mobility:true,muscle:'dorso',desc:'Elastico davanti, braccia tese, apri ai lati. Riscalda il dorso e bilancia il lavoro di spinta.'},
+        {id:'mob_gio_6',name:'Arm Circles + Cross-Body',params:'1 min',mobility:true,muscle:'spalle',desc:'Cerchi con le braccia + abbracci di se stessa alternati. Riscalda spalle, deltoidi e gabbia toracica.'}
+      ]},
+      {label:'PETTO',ex:[
+        {id:'panca',name:'Spinte panca piana manubri',params:'Singolo \u00b7 3\u00d710 \u00b7 RM 15',muscle:'petto'}
+      ]},
+      {label:'TRICIPITI',ex:[
+        {id:'french',name:'French press manubri',params:'Combo \u00b7 4\u00d78-10',combo:true,muscle:'tricipiti'},
+        {id:'pushdown',name:'Push down con corda',params:'Combo \u00b7 3-4\u00d78-12',combo:true,muscle:'tricipiti'}
+      ]},
+      {label:'BICIPITI',ex:[
+        {id:'curl_alt',name:'Curl manubri alternati in piedi',params:'Combo \u00b7 4\u00d78-10',combo:true,muscle:'bicipiti'},
+        {id:'curl_mart',name:'Curl manubri a martello in piedi',params:'Combo \u00b7 3\u00d78-10',combo:true,muscle:'bicipiti'}
+      ]},
+      {label:'CORE',ex:[
+        {id:'plank_gio',name:'Plank frontale classico',params:'Singolo \u00b7 hold',muscle:'core'}
+      ]}
+    ]
+  },
+  ven:{
+    title:'Full body leggero & Cardio',sub:'Recupero attivo \u00b7 Isolamento \u00b7 Tapis roulant',
+    sections:[
+      {label:'MOBILIT\u00c0 INIZIALE \u00b7 ~6 min',mobility:true,ex:[
+        {id:'mob_ven_1',name:'Camminata in punta + tallone',params:'30 sec ciascuno',mobility:true,muscle:'polpacci',desc:'Cammina sulla punta dei piedi per 30 secondi, poi sui talloni. Riscalda piedi e caviglie per il tapis roulant.'},
+        {id:'mob_ven_2',name:'Leg Swings (avanti/indietro)',params:'2\u00d710 per gamba',mobility:true,muscle:'mobility',desc:'Tieniti a un appoggio, oscilla una gamba avanti e indietro. Mobilita le anche dolcemente.'},
+        {id:'mob_ven_3',name:'Leg Swings (laterali)',params:'2\u00d710 per gamba',mobility:true,muscle:'abduttori',desc:'Stessa cosa ma le gambe oscillano lateralmente davanti al corpo. Apre adduttori e abduttori.'},
+        {id:'mob_ven_4',name:'Cat-Camel',params:'2\u00d710',mobility:true,muscle:'mobility',desc:'A quattro zampe, alterna inarcamento e curvatura. Sblocca tutta la colonna.'},
+        {id:'mob_ven_5',name:'Glute Bridge a corpo libero',params:'2\u00d715',mobility:true,muscle:'glutei',desc:'Sdraiata supina, ginocchia piegate, solleva il bacino. Attivazione finale dei glutei.'}
+      ]},
+      {label:'ATTIVAZIONE (bassa intensit\u00e0)',ex:[
+        {id:'legext',name:'Leg extension',params:'Singolo \u00b7 1\u00d730',muscle:'quadricipiti'},
+        {id:'legcurl_sed',name:'Leg curl seduto',params:'Singolo \u00b7 1\u00d730',muscle:'femorali'},
+        {id:'bridge_muro',name:'Bridge hip thrust piedi a muro',params:'Singolo \u00b7 1\u00d730',muscle:'glutei'},
+        {id:'hyperext_ven',name:'Hyperextension piedi extraruotati',params:'Singolo \u00b7 1\u00d730',muscle:'glutei'}
+      ]},
+      {label:'SPALLE ACCESSORIE',ex:[
+        {id:'alzate_lat_ven',name:'Alzate laterali al cavo basso',params:'Singolo \u00b7 3\u00d78 \u00b7 RM 12',muscle:'spalle'}
+      ]},
+      {label:'CARDIO',ex:[
+        {id:'cardio',name:'Camminata su tapis roulant',params:'20-30 min \u00b7 inclinazione moderata',muscle:'cardio'}
+      ]}
+    ]
+  }
+};
+
+function getSchede(){
+  try{
+    var s=localStorage.getItem('sch4');
+    return s?JSON.parse(s):JSON.parse(JSON.stringify(SCHEDE_DEFAULT));
+  }catch(e){return JSON.parse(JSON.stringify(SCHEDE_DEFAULT));}
+}
+function saveSchede(s){localStorage.setItem('sch4',JSON.stringify(s));}
+function getLog(){try{return JSON.parse(localStorage.getItem('gl3')||'{}');}catch(e){return {};}}
+function saveLog(l){localStorage.setItem('gl3',JSON.stringify(l));}
+
+function todayStr(){
+  var d=new Date();
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+}
+function todayDay(){
+  var map=['ven','lun','mar','mer','gio','ven','lun'];
+  return map[new Date().getDay()];
+}
+function getBest(id){
+  var e=(getLog()[id]||[]);
+  if(!e.length)return null;
+  return e.reduce(function(b,x){return(!b||x.kg>b.kg)?x:b;},null);
+}
+function genId(){return 'ex_'+Date.now()+'_'+Math.floor(Math.random()*1000);}
+function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+var page='schede';
+var day=todayDay();
+var open={};
+var editMode=false;
+var SCHEDE=getSchede();
+
+function render(){
+  document.getElementById('root').innerHTML=(page==='schede')?renderSchede():renderProgressi();
+}
+
+function toggleEdit(){
+  editMode=!editMode;
+  document.getElementById('editBtn').classList.toggle('active',editMode);
+  document.getElementById('editBtn').innerHTML=editMode?'\u2713 Fatto':'\u270E Modifica';
+  open={};
+  render();
+}
+
+function renderIcon(ex){
+  var m=ex.muscle||(ex.mobility?'mobility':'fullbody');
+  var info=MUSCLES[m]||MUSCLES.fullbody;
+  return '<div class="muscle-icon" style="background:'+muscleBg(m)+'">'+
+    muscleIcon(m)+
+    '<div class="muscle-tag" style="background:'+info.color+';color:#fff">'+info.short+'</div>'+
+  '</div>';
+}
+
+function videoBtn(name){
+  return '<a class="video-btn" href="'+youtubeUrl(name)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+
+    '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Video</a>';
+}
+
+function renderSchede(){
+  var nav='<div class="nav">';
+  for(var i=0;i<GIORNI.length;i++){
+    var g=GIORNI[i];
+    var isSel=(g===day);
+    var isT=(g===todayDay());
+    var st=isSel?'background:'+COLORS[g]+';border-color:'+COLORS[g]+';color:#fff':'';
+    nav+='<button class="nav-btn" style="'+st+'" onclick="setDay(\''+g+'\')"><span class="dot" style="background:'+COLORS[g]+'"></span>'+NAMES[g].slice(0,3)+(isT?'&nbsp;&#9679;':'')+' </button>';
+  }
+  nav+='</div>';
+
+  var s=SCHEDE[day];
+  var isT=(day===todayDay());
+  var col=COLORS[day];
+
+  var body='<div class="day-header"><span class="day-pill" style="background:'+col+'33;color:'+col+'">'+NAMES[day]+'</span>'+(isT?'<span class="today-badge">Oggi</span>':'')+'</div>';
+
+  if(editMode){
+    body+='<input type="text" id="day-title" value="'+escapeHtml(s.title)+'" onchange="updateDayMeta()" style="width:100%;background:#222228;border:1px solid #f5a623;border-radius:8px;color:#f0f0f2;font-size:18px;font-weight:700;padding:8px 10px;margin-bottom:6px;font-family:inherit"/>';
+    body+='<input type="text" id="day-sub" value="'+escapeHtml(s.sub)+'" onchange="updateDayMeta()" style="width:100%;background:#222228;border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:#8a8a94;font-size:13px;padding:6px 10px;margin-bottom:8px;font-family:inherit"/>';
+    body+='<div class="edit-banner">&#9998; Modifica attiva. Tocca un esercizio per cambiare il muscolo target.</div>';
+  }else{
+    body+='<div class="day-title">'+escapeHtml(s.title)+'</div><div class="day-sub">'+escapeHtml(s.sub)+'</div>';
+  }
+
+  for(var si=0;si<s.sections.length;si++){
+    var sec=s.sections[si];
+    var isMob=!!sec.mobility;
+    body+='<div class="section-block">';
+    if(editMode){
+      body+='<div class="section-label'+(isMob?' mobility':'')+'">';
+      body+='<input type="text" class="section-label-edit" value="'+escapeHtml(sec.label)+'" onchange="updateSectionLabel('+si+',this.value)"/>';
+      body+='<div class="section-actions">';
+      body+='<button class="icon-btn danger" onclick="delSection('+si+')">&#x1F5D1;</button>';
+      body+='</div></div>';
+    }else{
+      body+='<div class="section-label'+(isMob?' mobility':'')+'">'+escapeHtml(sec.label)+'</div>';
+    }
+
+    for(var ei=0;ei<sec.ex.length;ei++){
+      var ex=sec.ex[ei];
+      var isExMob=!!ex.mobility;
+      var best=getBest(ex.id);
+      var bestStr=(best&&best.kg>0)?best.kg+'kg':'&mdash;';
+      var isOpen=!!open[ex.id];
+      var muscleLabel=ex.muscle?(MUSCLES[ex.muscle]?MUSCLES[ex.muscle].label:'Full body'):'Full body';
+
+      if(editMode){
+        body+=renderExEdit(si,ei,ex,isOpen);
+      }else if(isExMob){
+        body+='<div class="ex-card mobility">'+
+          '<div class="ex-header" onclick="tog(\''+ex.id+'\')">'+
+            renderIcon(ex)+
+            '<div class="ex-info">'+
+              '<div class="ex-name">'+escapeHtml(ex.name)+'<span class="mobility-badge">mobilit\u00e0</span></div>'+
+              '<div class="ex-params">'+escapeHtml(ex.params)+'</div>'+
+            '</div>'+
+            '<div class="ex-right">'+
+              videoBtn(ex.name)+
+              '<div class="ex-chevron'+(isOpen?' open':'')+'">&#8964;</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="ex-log'+(isOpen?' open':'')+'">'+
+            '<div class="muscle-info"><b>Target:</b> '+escapeHtml(muscleLabel)+'</div>'+
+            '<a class="video-link-big" href="'+youtubeUrl(ex.name)+'" target="_blank" rel="noopener">'+
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'+
+              'Cerca su YouTube'+
+            '</a>'+
+            '<div class="mobility-desc">'+escapeHtml(ex.desc||'')+'</div>'+
+          '</div>'+
+        '</div>';
+      }else{
+        var log=getLog();
+        var entries=(log[ex.id]||[]).slice().reverse();
+        var hist='';
+        if(entries.length){
+          var maxKg=0;
+          for(var k=0;k<entries.length;k++){if(entries[k].kg>maxKg)maxKg=entries[k].kg;}
+          hist='<div class="history"><div class="history-title">Ultime sessioni</div>';
+          var limit=Math.min(8,entries.length);
+          for(var k=0;k<limit;k++){
+            var e=entries[k];
+            var isPR=(e.kg>0&&e.kg>=maxKg);
+            var realIdx=entries.length-1-k;
+            var valStr=(e.kg>0?e.kg+'kg':'&mdash;')+(e.reps>0?' &times; '+e.reps+' rep':'')+(e.note?' &middot; '+escapeHtml(e.note):'');
+            hist+='<div class="log-entry"><span class="log-date">'+e.date+'</span><span class="log-val'+(isPR?' pr':'')+'">'+valStr+'</span><button class="log-del" onclick="delE(\''+ex.id+'\','+realIdx+')">&#x2715;</button></div>';
+          }
+          hist+='</div>';
+        }
+
+        body+='<div class="ex-card'+(ex.combo?' combo':'')+'">'+
+          '<div class="ex-header" onclick="tog(\''+ex.id+'\')">'+
+            renderIcon(ex)+
+            '<div class="ex-info">'+
+              '<div class="ex-name">'+escapeHtml(ex.name)+(ex.combo?'<span class="combo-badge">combo</span>':'')+'</div>'+
+              '<div class="ex-params">'+escapeHtml(ex.params)+'</div>'+
+            '</div>'+
+            '<div class="ex-right">'+
+              videoBtn(ex.name)+
+              '<div class="ex-best">'+bestStr+'</div>'+
+              '<div class="ex-chevron'+(isOpen?' open':'')+'">&#8964;</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="ex-log'+(isOpen?' open':'')+'">'+
+            '<div class="muscle-info"><b>Target:</b> '+escapeHtml(muscleLabel)+'</div>'+
+            '<a class="video-link-big" href="'+youtubeUrl(ex.name)+'" target="_blank" rel="noopener">'+
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'+
+              'Cerca tutorial su YouTube'+
+            '</a>'+
+            '<div class="log-date-label">Sessione &mdash; '+todayStr()+'</div>'+
+            '<div class="input-row"><label>Kg</label><input type="number" id="k-'+ex.id+'" placeholder="0" step="0.5" min="0" inputmode="decimal"></div>'+
+            '<div class="input-row"><label>Rep</label><input type="number" id="r-'+ex.id+'" placeholder="0" step="1" min="0" inputmode="numeric"></div>'+
+            '<div class="input-row"><label>Note</label><input type="text" id="n-'+ex.id+'" placeholder="fatica, forma..."></div>'+
+            '<button class="save-btn" onclick="saveE(\''+ex.id+'\')">Salva &#x2713;</button>'+
+            hist+
+          '</div>'+
+        '</div>';
+      }
+    }
+
+    if(editMode){
+      body+='<button class="add-btn" onclick="addEx('+si+','+(isMob?'true':'false')+')">+ Aggiungi '+(isMob?'mobilit\u00e0':'esercizio')+'</button>';
+    }
+    body+='</div>';
+  }
+
+  if(editMode){
+    body+='<button class="add-btn" onclick="addSection()" style="margin-top:16px">+ Aggiungi sezione</button>';
+    body+='<div class="danger-zone"><div class="danger-title">Zona pericolosa</div>';
+    body+='<button class="save-btn danger" onclick="resetDay()">Ripristina giorno predefinito</button>';
+    body+='<button class="save-btn danger" style="margin-top:8px" onclick="resetAll()">Ripristina TUTTO ai predefiniti</button>';
+    body+='</div>';
+  }
+
+  return nav+'<div class="screen">'+body+'</div>';
+}
+
+function renderMuscleSelect(si,ei,current){
+  var keys=['glutei','femorali','quadricipiti','adduttori','abduttori','polpacci','dorso','spalle','petto','bicipiti','tricipiti','core','cardio','mobility','fullbody'];
+  var html='<div style="font-size:12px;color:#8a8a94;margin-bottom:6px">Muscolo target:</div><div class="muscle-select">';
+  for(var i=0;i<keys.length;i++){
+    var k=keys[i];
+    var sel=(current===k);
+    html+='<button class="muscle-opt'+(sel?' sel':'')+'" onclick="updateEx('+si+','+ei+',\'muscle\',\''+k+'\')">'+MUSCLES[k].label+'</button>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function renderExEdit(si,ei,ex,isOpen){
+  var isMob=!!ex.mobility;
+  var html='<div class="ex-card editing'+(ex.combo?' combo':'')+(isMob?' mobility':'')+'">';
+  html+='<div class="ex-header" onclick="tog(\''+ex.id+'\')" style="cursor:pointer">';
+  html+=renderIcon(ex);
+  html+='<div class="ex-info">';
+  html+='<div class="ex-name">'+escapeHtml(ex.name)+(ex.combo?'<span class="combo-badge">combo</span>':'')+(isMob?'<span class="mobility-badge">mobilit\u00e0</span>':'')+'</div>';
+  html+='<div class="ex-params">'+escapeHtml(ex.params)+'</div>';
+  html+='</div>';
+  html+='<div class="ex-chevron'+(isOpen?' open':'')+'">&#8964;</div>';
+  html+='</div>';
+
+  html+='<div class="ex-log'+(isOpen?' open':'')+'">';
+  html+='<div class="input-row"><label>Nome</label><input type="text" value="'+escapeHtml(ex.name)+'" onchange="updateEx('+si+','+ei+',\'name\',this.value)"></div>';
+  html+='<div class="input-row"><label>Param.</label><input type="text" value="'+escapeHtml(ex.params)+'" onchange="updateEx('+si+','+ei+',\'params\',this.value)" placeholder="es. 4\u00d76-8"></div>';
+  html+=renderMuscleSelect(si,ei,ex.muscle);
+  if(isMob){
+    html+='<div class="input-row" style="align-items:flex-start"><label>Note</label><textarea onchange="updateEx('+si+','+ei+',\'desc\',this.value)" style="flex:1;background:#222228;border:1px solid rgba(255,255,255,0.14);border-radius:10px;color:#f0f0f2;font-size:14px;padding:10px 12px;font-family:inherit;min-height:80px;resize:vertical">'+escapeHtml(ex.desc||'')+'</textarea></div>';
+  }else{
+    html+='<label class="checkbox-row"><input type="checkbox" '+(ex.combo?'checked':'')+' onchange="updateEx('+si+','+ei+',\'combo\',this.checked)"> &Egrave; un esercizio combo / superset</label>';
+  }
+  html+='<button class="save-btn ghost" onclick="moveEx('+si+','+ei+',-1)">&uarr; Sposta su</button>';
+  html+='<button class="save-btn ghost" style="margin-top:6px" onclick="moveEx('+si+','+ei+',1)">&darr; Sposta gi\u00f9</button>';
+  html+='<button class="save-btn danger" style="margin-top:6px" onclick="delEx('+si+','+ei+')">&#x1F5D1; Elimina</button>';
+  html+='</div>';
+  html+='</div>';
+  return html;
+}
+
+function renderProgressi(){
+  var log=getLog();
+  var allEx=[];
+  for(var gi=0;gi<GIORNI.length;gi++){
+    var g=GIORNI[gi];
+    var scs=SCHEDE[g].sections;
+    for(var si=0;si<scs.length;si++){
+      var exs=scs[si].ex;
+      for(var ei=0;ei<exs.length;ei++){
+        var ex=exs[ei];
+        if(ex.mobility)continue;
+        var entries=log[ex.id]||[];
+        if(entries.length){
+          var maxKg=0;
+          for(var k=0;k<entries.length;k++){if(entries[k].kg>maxKg)maxKg=entries[k].kg;}
+          allEx.push({id:ex.id,name:ex.name,muscle:ex.muscle,entries:entries,maxKg:maxKg,firstKg:entries[0].kg,day:g});
+        }
+      }
+    }
+  }
+
+  var totSess=0;
+  var keys=Object.keys(log);
+  for(var i=0;i<keys.length;i++)totSess+=log[keys[i]].length;
+  var totEx=keys.filter(function(k){return log[k].length>0;}).length;
+  var totPR=0;
+  for(var i=0;i<allEx.length;i++){if(allEx[i].maxKg>allEx[i].firstKg)totPR++;}
+
+  var html='<div class="screen">';
+  html+='<div style="font-size:18px;font-weight:700;padding:16px 0 12px">I tuoi progressi</div>';
+  html+='<div class="stat-grid">'+
+    '<div class="stat-card"><div class="stat-label">Sessioni totali</div><div class="stat-val">'+totSess+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Esercizi tracciati</div><div class="stat-val">'+totEx+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Personal record &#x1F3C6;</div><div class="stat-val green">'+totPR+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Settimane</div><div class="stat-val">'+Math.max(1,Math.ceil(totSess/5))+'</div></div>'+
+  '</div>';
+
+  if(!allEx.length){
+    html+='<div class="empty">Nessun dato ancora.<br>Registra la prima sessione e torna qui!</div>';
+  }else{
+    allEx.sort(function(a,b){return b.entries.length-a.entries.length;});
+    for(var i=0;i<allEx.length;i++){
+      var ex=allEx[i];
+      var pct=ex.firstKg>0?Math.min(100,Math.round(((ex.maxKg-ex.firstKg)/ex.firstKg)*100)):0;
+      var col=COLORS[ex.day];
+      html+='<div class="prog-card">'+
+        '<div class="prog-name"><span style="width:8px;height:8px;border-radius:50%;background:'+col+';display:inline-block;flex-shrink:0"></span>'+escapeHtml(ex.name)+'</div>'+
+        '<div class="prog-bar-bg"><div class="prog-bar-fill" style="width:'+Math.max(4,pct)+'%;background:'+col+'"></div></div>'+
+        '<div class="prog-stats">'+
+          '<span>Inizio: <b>'+ex.firstKg+'kg</b></span>'+
+          '<span>Best: <b>'+ex.maxKg+'kg</b></span>'+
+          '<span>'+ex.entries.length+' sessioni</span>'+
+          (pct>0?'<span style="color:'+col+';font-weight:700">+'+pct+'%</span>':'')+
+        '</div>'+
+      '</div>';
+    }
+  }
+  html+='</div>';
+  return html;
+}
+
+function updateDayMeta(){
+  SCHEDE[day].title=document.getElementById('day-title').value;
+  SCHEDE[day].sub=document.getElementById('day-sub').value;
+  saveSchede(SCHEDE);
+}
+function updateSectionLabel(si,val){
+  SCHEDE[day].sections[si].label=val;
+  saveSchede(SCHEDE);
+}
+function delSection(si){
+  if(!confirm('Eliminare la sezione "'+SCHEDE[day].sections[si].label+'" e tutti i suoi esercizi?'))return;
+  SCHEDE[day].sections.splice(si,1);
+  saveSchede(SCHEDE);
+  render();
+}
+function addSection(){
+  var name=prompt('Nome della nuova sezione:','NUOVA SEZIONE');
+  if(!name)return;
+  SCHEDE[day].sections.push({label:name.toUpperCase(),ex:[]});
+  saveSchede(SCHEDE);
+  render();
+}
+function addEx(si,isMob){
+  var newEx;
+  if(isMob){
+    newEx={id:genId(),name:'Nuovo esercizio mobilit\u00e0',params:'2\u00d710',mobility:true,muscle:'mobility',desc:''};
+  }else{
+    newEx={id:genId(),name:'Nuovo esercizio',params:'3\u00d710',combo:false,muscle:'fullbody'};
+  }
+  SCHEDE[day].sections[si].ex.push(newEx);
+  saveSchede(SCHEDE);
+  open[newEx.id]=true;
+  render();
+}
+function updateEx(si,ei,field,val){
+  SCHEDE[day].sections[si].ex[ei][field]=val;
+  saveSchede(SCHEDE);
+  render();
+}
+function delEx(si,ei){
+  var ex=SCHEDE[day].sections[si].ex[ei];
+  if(!confirm('Eliminare "'+ex.name+'"?'))return;
+  SCHEDE[day].sections[si].ex.splice(ei,1);
+  saveSchede(SCHEDE);
+  render();
+}
+function moveEx(si,ei,dir){
+  var arr=SCHEDE[day].sections[si].ex;
+  var newIdx=ei+dir;
+  if(newIdx<0||newIdx>=arr.length)return;
+  var tmp=arr[ei];
+  arr[ei]=arr[newIdx];
+  arr[newIdx]=tmp;
+  saveSchede(SCHEDE);
+  render();
+}
+function resetDay(){
+  if(!confirm('Ripristinare il giorno "'+NAMES[day]+'" alla scheda predefinita?\nLo storico dei kg viene mantenuto.'))return;
+  SCHEDE[day]=JSON.parse(JSON.stringify(SCHEDE_DEFAULT[day]));
+  saveSchede(SCHEDE);
+  render();
+}
+function resetAll(){
+  if(!confirm('ATTENZIONE: ripristinare TUTTE le schede ai valori predefiniti?\nLo storico dei kg viene mantenuto.'))return;
+  if(!confirm('Sei sicura?'))return;
+  SCHEDE=JSON.parse(JSON.stringify(SCHEDE_DEFAULT));
+  saveSchede(SCHEDE);
+  render();
+}
+
+function tog(id){
+  open[id]=!open[id];
+  render();
+  if(open[id]&&!editMode){
+    setTimeout(function(){
+      var el=document.getElementById('k-'+id);
+      if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+    },80);
+  }
+}
+function setDay(g){day=g;open={};render();window.scrollTo(0,0);}
+function saveE(id){
+  var kg=parseFloat((document.getElementById('k-'+id)||{}).value)||0;
+  var reps=parseInt((document.getElementById('r-'+id)||{}).value)||0;
+  var note=((document.getElementById('n-'+id)||{}).value)||'';
+  if(!kg&&!reps&&!note){alert('Inserisci almeno i kg o le ripetizioni!');return;}
+  var log=getLog();
+  if(!log[id])log[id]=[];
+  log[id].push({date:todayStr(),kg:kg,reps:reps,note:note});
+  saveLog(log);
+  open[id]=true;
+  render();
+}
+function delE(id,idx){
+  if(!confirm('Eliminare questa voce?'))return;
+  var log=getLog();
+  if(log[id])log[id].splice(idx,1);
+  saveLog(log);
+  open[id]=true;
+  render();
+}
+function goTo(p){
+  page=p;open={};
+  if(editMode)toggleEdit();
+  var bs=document.querySelectorAll('.bnav-btn');
+  for(var i=0;i<bs.length;i++)bs[i].classList.remove('active');
+  document.getElementById('b-'+p).classList.add('active');
+  render();window.scrollTo(0,0);
+}
+
+(function(){
+  var days=['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
+  var d=new Date();
+  document.getElementById('tlabel').textContent=days[d.getDay()]+' '+todayStr();
+  render();
+})();
+</script>
+</body>
+</html>
